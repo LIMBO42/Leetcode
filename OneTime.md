@@ -58,3 +58,37 @@ public:
 };
 ```
 
+#### 950 递增顺序显示纸牌
+
+思路：从最后一步开始模拟，每次都是将最后一张移动到第一张，然后按顺序防止纸牌
+
+```C++
+class Solution {
+public:
+    static bool compare(int &a,int &b){
+        return a>b;
+    }
+    vector<int> deckRevealedIncreasing(vector<int>& deck) {
+        if(deck.size()==0) return vector<int>{};
+        else if(deck.size()==1) return vector<int>{deck[0]};
+        sort(deck.begin(),deck.end(),compare);
+        deque<int> res;
+        res.push_back(deck[0]);
+        res.push_front(deck[1]);
+        for(int i=2;i<deck.size();i++){
+            int tmp = res.back();
+            res.pop_back();
+            res.push_front(tmp);
+            res.push_front(deck[i]);
+        }
+        vector<int> result;
+        while(res.empty()==false){
+            result.push_back(res.front());
+            res.pop_front();
+        }
+        return result;
+    }
+    
+};
+```
+
