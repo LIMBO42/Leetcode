@@ -26,7 +26,7 @@ int my_lower_bound(vector<int> &vec, int first, int last, int val){
 }
 ```
 
-<img src="https://typora-1306385380.cos.ap-nanjing.myqcloud.com/img/image-20210923095304156.png" alt="image-20210923095304156" style="zoom:67%;" />
+<img src="https://typora-1306385380.cos.ap-nanjing.myqcloud.com/img/image-20210923095304156.png" alt="image-20210923095304156" style="zoom: 50%;" />
 
 也就是说一个`lower_bound`函数可以处理几乎所有的情况了(`upper_bound`只需要向后找几个元素，当然如果数据量大可能比较慢)
 
@@ -36,5 +36,5 @@ int my_lower_bound(vector<int> &vec, int first, int last, int val){
 
 左闭右开的思想在很多方面都有体现，比如`vec.end()`，`for range`，`for int i=0;i<vec.size();i++`，`slice`
 
-<img src="https://typora-1306385380.cos.ap-nanjing.myqcloud.com/img/image-20210923101559167.png" alt="image-20210923101559167" style="zoom:67%;" />
+<img src="https://typora-1306385380.cos.ap-nanjing.myqcloud.com/img/image-20210923101559167.png" alt="image-20210923101559167" style="zoom: 50%;" />
 
