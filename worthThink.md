@@ -127,3 +127,159 @@ vector<vector<string>> groupAnagrams(vector<string>& strs) {
 }
 ```
 
+
+
+#### [1765. 地图中的最高点](https://leetcode-cn.com/problems/map-of-highest-peak/)
+
+```C++
+	vector<vector<int>> highestPeak(vector<vector<int>>& isWater) {
+        int m=isWater.size();
+        int n=isWater[0].size();
+        vector<vector<int>> res(m,vector<int>(n,-1));
+        vector<vector<bool>> is_modified(m,vector<bool>(n,false));
+        queue<pair<int,int>> que;
+        //多源点，将所有水域push进queue
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                if(isWater[i][j]==1){
+                    que.push(make_pair(i,j));
+                    res[i][j]=0;
+                    is_modified[i][j]=true;
+                    
+                }
+            }
+        }
+        vector<int> dir{-1,0,1,0,-1};
+        while(!que.empty()){
+            pair<int,int> place = que.front();
+            que.pop();
+            int num=res[place.first][place.second];
+            
+            for(int i=0;i<4;i++){
+                int row = place.first+dir[i];
+                int col = place.second+dir[i+1];
+                //如果在图的范围且没有修改过
+                if(row>=0&&row<m&&col>=0&&col<n&&is_modified[row][col]==false){
+                    
+                    res[row][col]=num+1;
+                    is_modified[row][col]=true;
+                    que.push(make_pair(row,col));
+                }
+            }
+        }
+        return res;
+    }
+```
+
+思路主要是多源点的BFS，从多个源点同时出发，这样保证了发生冲突的时候保留比较小的那块
+
+不可能相邻的高度差超过1，因为这样的话，比较小的那块应该继续蔓延的
+
+
+
+#### [55. 跳跃游戏](https://leetcode-cn.com/problems/jump-game/)
+
+```c++
+    bool canJump(vector<int>& nums) {
+        //站在某个位置能跳1-nums[i]之间的任何数，用maxLen记录能到达的最远的位置
+        //如果出现有maxLen跳步到的位置返回false
+        //nums[i]+i就是可能走到的最远的距离，之间的任何数都可能走到
+        int maxLen=nums[0];
+        for(int i=1;i<nums.size();i++){
+            if(i>maxLen) return false;
+            maxLen = max(nums[i]+i,maxLen);
+        }
+        return true;
+    }
+```
+
+#### [114. 二叉树展开为链表](https://leetcode-cn.com/problems/flatten-binary-tree-to-linked-list/)
+
+```C++
+class Solution {
+public:
+    //想象一下如果从根开始将左节点置空的话不是很方便，因为子树也要进行对应的操作
+    //因此考虑后序遍历
+    void lastOrder(TreeNode *&root){
+        if(root==NULL) return;
+        lastOrder(root->left);
+        lastOrder(root->right);
+        
+        if(root->left==NULL) return;
+        if(root->right==NULL){
+            root->right=root->left;
+            root->left=NULL;
+            return;
+        }
+        //左边不空的话，需要找到左子树的最右下的节点
+        TreeNode *q = root->left;
+        while(q->right!=NULL){
+            q=q->right;
+        }
+        q->right = root->right;
+        root->right = root->left;
+        root->left=NULL;
+    }
+    void flatten(TreeNode* root) {
+        lastOrder(root);
+    }
+};
+```
+
+#### [128. 最长连续序列](https://leetcode-cn.com/problems/longest-consecutive-sequence/)
+
+```C++
+class Solution {
+public:
+    int longestConsecutive(vector<int>& nums) {
+        if(nums.size()==0) return 0;
+        unordered_set<int> tmpSet;
+        for(int i=0;i<nums.size();i++){
+            tmpSet.emplace(nums[i]);
+        }
+        int maxLen=1;
+        //用空间换时间
+        for(int i=0;i<nums.size();i++){
+            //如果是不连续的第一个数
+            //因此外层的循环是有限的，只是每次不连续的时候断开一次，时间复杂度kn
+            if(tmpSet.find(nums[i]-1)==tmpSet.end()){        
+                int tmpLen=1;
+                //从nums[i]+1开始看有没有 连续的
+                for(int j=nums[i]+1;;j++){       
+                    if(tmpSet.find(j)==tmpSet.end()){
+                        //没有找到
+                        maxLen=max(maxLen,tmpLen);
+                        break;
+                    }else{
+                        tmpLen++;
+                    }
+                }
+            }
+        } 
+        return maxLen;
+    }
+};
+```
+
+#### [877. 石子游戏](https://leetcode-cn.com/problems/stone-game/)
+
+```C++
+class Solution {
+public:
+    bool stoneGame(vector<int>& piles) {
+        //用dp[i][j]i-j之间先手和后手两个人的差
+        //dp[i][j] = max(piles[i]-dp[i+1][j],piles[j]-dp[i][j-1])
+        vector<vector<int>> dp(piles.size(),vector<int>(piles.size(),0));
+        for(int i=piles.size()-1;i>=0;i--){
+            for(int j=i;j<piles.size();j++){
+                if(i==j) dp[i][j] = piles[i];
+                else{
+                    dp[i][j] = max(piles[i]-dp[i+1][j],piles[j]-dp[i][j-1]);
+                }
+            }
+        }
+        return dp[0][piles.size()-1] > 0;
+    }
+};
+```
+
