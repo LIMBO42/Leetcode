@@ -92,3 +92,33 @@ public:
 };
 ```
 
+
+
+
+
+#### [1110. 删点成林](https://leetcode-cn.com/problems/delete-nodes-and-return-forest/)
+
+```C++
+class Solution {
+public:
+    vector<TreeNode*> res;
+    void lastOrder(TreeNode* &root, vector<int>& to_delete){
+        if(root==nullptr) return;
+        lastOrder(root->left,to_delete);
+        lastOrder(root->right,to_delete);
+        if(find(to_delete.begin(),to_delete.end(),root->val)!=to_delete.end()){
+            if(root->left!=nullptr) res.push_back(root->left);
+            if(root->right!=nullptr) res.push_back(root->right);
+            root=nullptr;
+        }
+
+    }
+    vector<TreeNode*> delNodes(TreeNode* root, vector<int>& to_delete) {
+        lastOrder(root,to_delete);
+        if(root!=nullptr) res.push_back(root);
+        return res;
+    }
+};
+```
+
+就主要要想到是后序遍历，因为要先将子节点处理好了才能放进`vector`中

@@ -231,3 +231,140 @@ public:
 这个设计主要就是要想到`Node* word[26]`。
 
 还有一个问题就是设计的时候应该是`\0`的位置置`bool`为`true`，否则判断前缀的时候`jam,jan`就判断不出来
+
+#### [148. 排序链表](https://leetcode-cn.com/problems/sort-list/)
+
+```c++
+#include<iostream>
+#include<istream>
+#include<sstream>
+#include<string>
+#include<deque>
+using namespace std;
+struct ListNode {
+    int val;
+    ListNode* next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode* next) : val(x), next(next) {}
+};
+
+//快慢指针找链表终点
+ListNode* searchMid(ListNode* head) {
+    ListNode* slow = head;
+    ListNode* fast = head;
+    ListNode* pre = head;
+    while (fast != nullptr && fast->next != nullptr) {
+        pre = slow;
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return pre;
+}
+
+//合并两个有序链表，返回的是有头指针的链表
+ListNode* merge(ListNode* list1, ListNode* list2) {
+    ListNode* head = new ListNode;
+    head->next = nullptr;
+    ListNode* pre = head;
+    while (list1 != nullptr && list2 != nullptr) {
+        int num; 
+        if (list1->val < list2->val) {
+            num = list1->val;
+            list1 = list1->next;
+        }
+        else {
+            num = list2->val;
+            list2 = list2->next;
+        }
+        ListNode* tmp = new ListNode;
+        tmp->val = num;
+        tmp->next = nullptr;
+        pre->next = tmp;
+        pre = pre->next;
+    }
+    while (list1 != nullptr) {
+        ListNode* tmp = new ListNode;
+        tmp->val = list1->val;
+        tmp->next = nullptr;
+        pre->next = tmp;
+        pre = pre->next;
+        list1 = list1->next;
+    }
+    while (list2 != nullptr) {
+        ListNode* tmp = new ListNode;
+        tmp->val = list2->val;
+        tmp->next = nullptr;
+        pre->next = tmp;
+        pre = pre->next;
+        list2 = list2->next;
+    }
+    return head;
+}
+
+void printList(ListNode* head) {
+    for (ListNode* p = head; p != nullptr; p = p->next) {
+        cout << p->val << " ";
+    }
+    cout << endl;
+}
+
+ListNode* createList() {
+    string str;
+    cin >> str;
+    istringstream iss(str);
+    string temp;
+    ListNode* head = new ListNode;
+    head->next = nullptr;
+    deque<int> tmpQue;
+    while (getline(iss, temp, ',')) {
+        tmpQue.push_back(atoi(temp.c_str()));
+    }
+    while (!tmpQue.empty()) {
+        ListNode* p = new ListNode;
+        p->val = tmpQue.back();
+        tmpQue.pop_back();
+        p->next = head->next;
+        head->next = p;
+    }
+    return head;
+}
+
+//递归
+ListNode* func(ListNode* head) {
+    //只有一个元素或者就是空
+    if (head == nullptr || head->next == nullptr) return head;
+    //找到中点
+    ListNode* pre = searchMid(head);
+    ListNode* mid = pre->next;
+    pre->next = nullptr;
+    //递归完了都是有序的
+    ListNode* list1 = func(head);
+    ListNode* list2 = func(mid);
+    ListNode* res = merge(list1, list2);
+    return res->next;
+}
+
+int main()
+{
+    /*
+    ListNode* head1 = createList();
+    ListNode* head2 = createList();
+    ListNode* head = merge(head1->next, head2->next);
+    printList(head->next);
+    */
+    ListNode* head = createList();
+    ListNode* res = func(head->next);
+    printList(res);
+    
+    //cout << searchMid(head->next)->val << endl;
+    
+	return 0;
+}
+```
+
+首先`nlogn`的排序可能有快排，归并，堆排序，其中快排需要用到元素的交换和位置信息，堆排序同样需要位置信息，因此只有归并最有可能。
+
+但归并要找链表中点，怎么找？快慢指针
+
+递归合并

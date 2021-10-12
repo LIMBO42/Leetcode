@@ -283,3 +283,244 @@ public:
 };
 ```
 
+#### [238. 除自身以外数组的乘积](https://leetcode-cn.com/problems/product-of-array-except-self/)
+
+```C++
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+        int start = 1, end = 1;
+        vector<int> res(nums.size(),1);
+        //前缀和的思路很容易想，常数空间需要从两边
+        for(int i=0;i<nums.size();i++){
+            res[i] *= start;
+            start *= nums[i];
+            res[nums.size()-1-i] *= end;
+            end *= nums[nums.size()-1-i]; 
+        } 
+        return res;
+    }
+};
+```
+
+很容易想到用前缀和的方法来计算，但是如果要在常数空间内完成，需要考虑到两边乘积
+
+分成两段就好理解很多
+
+```C++
+        //其实分成两段应该就能理解
+        for(int i=0;i<nums.size();i++){
+            res[i] *= start;
+            start *= nums[i];
+        }
+        for(int i=nums.size()-1;i>=0;i--){
+            res[i] *= end;
+            end *= nums[i];
+        }
+        return res;
+```
+
+
+
+
+
+#### [331. 验证二叉树的前序序列化](https://leetcode-cn.com/problems/verify-preorder-serialization-of-a-binary-tree/)
+
+```C++
+bool isValidSerialization(string preorder) {
+    istringstream is(preorder);
+    string tmp;
+    stack<char> st;
+    while (getline(is, tmp, ',')) {
+        st.push(tmp[0]);
+        if (st.size() >= 3) {
+            char ch1 = st.top();
+            st.pop();
+            char ch2 = st.top();
+            st.pop();
+            char ch3 = st.top();
+            st.pop();
+            if (ch1 == '#' && ch2 == '#' && ch3 != '#') {
+                st.push('#');
+                while (st.size() >= 3) {
+                    char ch1 = st.top();
+                    st.pop();
+                    char ch2 = st.top();
+                    st.pop();
+                    char ch3 = st.top();
+                    st.pop();
+                    if (ch1 == '#' && ch2 == '#' && ch3 != '#') {
+                        st.push('#');
+                    }
+                    else {
+                        st.push(ch3);
+                        st.push(ch2);
+                        st.push(ch1);
+                        break;
+                    }
+                }
+            }
+            else {
+                st.push(ch3);
+                st.push(ch2);
+                st.push(ch1);
+            }
+        }
+    }
+    
+    if (st.size() == 1 && st.top() == '#') return true;
+    return false;
+}
+```
+
+主要是不断消去的思路
+
+
+
+
+
+#### [剑指 Offer 56 - I. 数组中数字出现的次数](https://leetcode-cn.com/problems/shu-zu-zhong-shu-zi-chu-xian-de-ci-shu-lcof/)
+
+```c++
+class Solution {
+public:
+    vector<int> singleNumbers(vector<int>& nums) {
+        //所有数进行异或
+        //出现两次的数字异或的结果是 0 
+        //因此 结果是 那两个只出现一次的数字的异或
+        int tmpOr = 0;
+        for(int i=0;i<nums.size();i++){
+            tmpOr = tmpOr ^ nums[i];
+        }
+        //从右向左 看哪一位为1
+        int count = 0;
+        while(tmpOr!=0){
+            int tmp = tmpOr % 2;
+            if(tmp == 1) break;
+            tmpOr = tmpOr/2;
+            count++;
+        }
+        int group1 = 0;
+        int group2 = 0;
+        for(int i=0;i<nums.size();i++){
+            int num = 0;
+            int tmp;
+            int tmpOr = nums[i];
+            while(num<=count){
+                tmp = tmpOr % 2;
+                tmpOr = tmpOr / 2;
+                num++;
+            }
+            if(tmp==0){
+                group1 = group1^nums[i];
+            }else if(tmp == 1){
+                group2 = group2^nums[i];
+            }
+        }
+        return vector<int>{group1,group2};
+    }
+};
+```
+
+> 相同的数异或为0，不同的异或为1。0和任何数异或等于这个数本身。
+>
+> 所以，数组里面所有数异或 = 目标两个数异或 。 由于这两个数不同，所以异或结果必然不为0。
+>
+> 假设数组异或的二进制结果为10010，那么说明这两个数从右向左数第2位是不同的
+>
+> 那么可以根据数组里面所有数的第二位为0或者1将数组划分为2个。
+>
+> 这样做可以将目标数必然分散在不同的数组中，而且相同的数必然落在同一个数组中。
+>
+> 这两个数组里面的数各自进行异或，得到的结果就是答案
+
+
+
+#### [865. 具有所有最深节点的最小子树](https://leetcode-cn.com/problems/smallest-subtree-with-all-the-deepest-nodes/)
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    int maxDepth = -1;
+    unordered_map<TreeNode*,int> map;
+    unordered_map<TreeNode*,TreeNode*> fatherMap;
+    int count=0;
+    void preOrder(TreeNode *root,int depth){
+        if(root == nullptr) return;
+        map[root] = depth;
+        maxDepth = max(maxDepth,depth);
+        
+        if(root->left!=nullptr)
+            fatherMap[root->left] = root;
+        if(root->right!=nullptr)
+            fatherMap[root->right] = root;
+        preOrder(root->left,depth+1);
+        preOrder(root->right,depth+1);
+    }
+    
+    //看能不能找到到
+    bool judge(TreeNode* root, TreeNode* node){
+        if(root == nullptr) return false;
+        if(root == node) return true;
+        if(judge(root->left,node)||judge(root->right,node)) return true;
+        return false;
+    }
+
+    TreeNode* findFather(TreeNode* root, TreeNode*root1,TreeNode* root2){
+        //如果一个在左边 一个在右边
+        bool flag1left = judge(root->left,root1);
+        bool flag1right = judge(root->right,root1);
+        bool flag2left = judge(root->left,root2);
+        bool flag2right = judge(root->right,root2);
+        if(flag1left&&flag2right) return root;
+        else if(flag1right&&flag2left) return root;
+        else if(flag1left&&flag2left) return findFather(root->left,root1,root2);
+        else if(flag1right&&flag2right) return findFather(root->right,root1,root2);
+        return root;
+    }
+    
+    TreeNode* subtreeWithAllDeepest(TreeNode* root) {
+        preOrder(root,0);
+        
+        stack<TreeNode*> vec;
+        for(auto it = map.begin();it!=map.end();it++){
+            //如果遇到的是最大
+            if(it->second == maxDepth){
+                count++;
+                vec.push(it->first);
+            }
+        }
+        if(vec.size()==1) return vec.top();
+        
+        while(vec.size()>=2){
+            TreeNode* node1=vec.top();
+            vec.pop();
+            TreeNode* node2=vec.top();
+            vec.pop();
+            
+            //找这两个节点的公共祖先
+            vec.push(findFather(root,node1,node2));
+        }
+        return vec.top();
+    }
+};
+```
+
+如何去寻找两个节点的共同祖先？
+
+如果两个节点均在左边子树，或者均在右边子树，则需要说明共同祖先在左子树或者右子树
+
+如果两个节点分别在左右子树，则共同祖先就是该节点
+
+如何判断在哪个子树中？利用递归去寻找。
