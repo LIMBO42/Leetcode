@@ -524,3 +524,81 @@ public:
 如果两个节点分别在左右子树，则共同祖先就是该节点
 
 如何判断在哪个子树中？利用递归去寻找。
+
+
+
+#### [560. 和为 K 的子数组](https://leetcode-cn.com/problems/subarray-sum-equals-k/)
+
+```C++
+class Solution {
+public:
+    int subarraySum(vector<int>& nums, int k) {
+        //计算前缀和
+        //end - start
+        unordered_map<int,int> sumMap;
+        int sum=0;
+        sumMap[0]=1;
+        int count=0;
+        //记录出现几次
+        //如果当前是sum，前面的map中有出现sum-k
+        //说明从sum-k的那段到sum的这一段为所要求的的连续子数组
+        for(int i=0;i<nums.size();i++){
+            sum+=nums[i];
+            count+=sumMap[sum-k];
+            sumMap[sum]++;
+        }
+        
+        return count;
+
+    }
+};
+```
+
+思路：要求连续数组和为k，考虑前缀和，如果当前的和为`sum`，并且前面有前缀和为`sum-k`，就说明存在一段数组和为k。
+
+
+
+#### [524. 通过删除字母匹配到字典里最长单词](https://leetcode-cn.com/problems/longest-word-in-dictionary-through-deleting/)
+
+```C++
+class Solution {
+public:
+    //判断str2是不是str1的子序列
+    //双指针
+    bool judge(string &str1, string &str2){
+        int cur1=0,cur2=0;
+        while(cur2<str2.length()&&cur1<str1.length()){
+            if(str1[cur1]==str2[cur2]){
+                //cur1++;
+                cur2++;
+            }
+            cur1++;
+        }
+        if(cur2==str2.length()) return true;
+        return false;
+    }
+    bool static compare(const string &str1,const string &str2){
+        if(str1.length()>str2.length()) return true;
+        else if(str1.length()<str2.length()) return false;
+        return str1<str2;
+        
+    }
+    string findLongestWord(string s, vector<string>& dictionary) {
+        
+        vector<vector<int>> map(dictionary.size(),vector<int>(26,0));
+        vector<string> res;
+        for(int i=0;i<dictionary.size();i++){
+            
+            if(judge(s,dictionary[i])){
+                res.push_back(dictionary[i]);
+            }
+        }
+        // s中的每个字符均的值均要>=
+        if(res.size()==0) return "";
+        sort(res.begin(),res.end(),compare);
+        return res[0];
+    }
+};
+```
+
+判断一下`judge(str1,str2)`；`str2`是不是`str1`的子序列，思路是根据`str2`中的必然在`str1`中会出现， 那出现一个字母就在`str1`中不断找，直到找到相等的
