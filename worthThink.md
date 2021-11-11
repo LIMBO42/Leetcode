@@ -601,4 +601,218 @@ public:
 };
 ```
 
-判断一下`judge(str1,str2)`；`str2`是不是`str1`的子序列，思路是根据`str2`中的必然在`str1`中会出现， 那出现一个字母就在`str1`中不断找，直到找到相等的
+判断一下`judge(str1,str2)`；`str2`是不是`str1`的子序列，思路是根据`str2`中的必然在`str1`中会出现， 那出现一个字母就在`str1`中不断找，直到找到不相等的
+
+
+
+
+
+#### [面试题 03.05. 栈排序](https://leetcode-cn.com/problems/sort-of-stacks-lcci/)
+
+##### 方法一：
+
+```c++
+class SortedStack {
+private:
+    stack<int> stack1;
+    stack<int> stack2;
+public:
+
+    //两种写法：可以保证stack1有序 12356 这样，插入的时候将stack2作为跳板,比如插入4将123倒入stack2
+    SortedStack() {
+
+    }
+    
+    void push(int val) {
+        
+        if(stack1.empty() ||val<stack1.top()) {stack1.push(val); return;}
+        while(!stack1.empty()&&val>stack1.top()){
+            stack2.push(stack1.top());
+            stack1.pop();
+        }
+        stack1.push(val);
+        //再将stack2倒回来
+        while(!stack2.empty()){
+            stack1.push(stack2.top());
+            stack2.pop();
+        }
+    }
+    
+    void pop() {
+        if(isEmpty()) return;
+        stack1.pop();
+    }
+    
+    int peek() {
+        if(isEmpty()) return -1;
+        return stack1.top();
+    }
+    
+    bool isEmpty() {
+        return stack1.empty()&&stack2.empty();
+    }   
+};
+```
+
+主要思路是维护`stack1`的顺序关系，比如`12356`这样，插入`4`就将`123`倒入`stack2`，插入完成后再倒回来
+
+```c++
+class SortedStack {
+public:
+    stack<int>s1;//原栈为降序
+    stack<int>s2;//辅助栈为升序
+    SortedStack() {
+
+    }
+    
+    void push(int val) {
+        while(!s2.empty() && s2.top() > val){//辅助栈中存在比val大的值
+            s1.push(s2.top());
+            s2.pop();
+        }
+        while(!s1.empty() && s1.top() < val){//原栈中有比val小的值
+            s2.push(s1.top());
+            s1.pop();
+        }
+        s1.push(val);
+    }
+    
+    void pop() {
+        while(!s2.empty()){//清空辅助栈
+            s1.push(s2.top());
+            s2.pop();
+        }
+        if(!s1.empty()) s1.pop();
+    }
+    
+    int peek() {
+        while(!s2.empty()){//清空辅助栈
+            s1.push(s2.top());
+            s2.pop();
+        }
+        if(!s1.empty()) return s1.top();
+        else return -1;
+    }
+    
+    bool isEmpty() {
+        return s1.empty() && s2.empty();
+    }
+};
+
+
+```
+
+第二种做法：维护两个栈 一个递增 一个递减
+
+
+
+
+
+
+
+#### [95. 不同的二叉搜索树 II](https://leetcode-cn.com/problems/unique-binary-search-trees-ii/)
+
+```c++
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;=0
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+class Solution {
+public:
+    
+    //想清楚一点：其实是逐步拼接的一个过程
+    vector<TreeNode*> DFS(int start,int end){
+        if(start > end) return {nullptr};
+        if(start == end){
+            TreeNode* p = new TreeNode;
+            p->val = start;
+            p->left = nullptr;
+            p->right = nullptr;
+            return {p};
+        }
+        vector<TreeNode*> res;
+        for(int i=start;i<=end;i++){
+            vector<TreeNode*> left = DFS(start,i-1);
+            vector<TreeNode*> right = DFS(i+1,end);
+            //从左边随机挑一个拼接到左子树
+            for(int j=0;j<left.size();j++){
+                for(int k=0;k<right.size();k++){
+                    TreeNode* p = new TreeNode;
+                    p->val = i;
+                    p->left = left[j];
+                    p->right = right[k];
+                    res.push_back(p);
+                }
+            }
+            
+        }
+        return res;
+    }
+    vector<TreeNode*> generateTrees(int n) {
+        return DFS(1,n);
+    }
+};
+```
+
+
+
+
+
+#### [390. 消除游戏](https://leetcode-cn.com/problems/elimination-game/)
+
+```C++
+class Solution {
+public:
+    void myprint(vector<int>& vec){
+        for(auto it=vec.begin();it!=vec.end();++it){
+            cout<<*it<<" ";
+        }
+        cout<<endl;
+    }
+    int lastRemaining(int n) {
+        vector<int> vec(n,0);
+        int count=1;
+        for(auto it=vec.begin();it!=vec.end();++it){
+            *it=count++;
+        }
+        //myprint(vec);
+        while(vec.size()>=1){
+            auto it = vec.begin();
+            while(it<vec.end()){
+                //cout<<*it<<" ";
+                it = vec.erase(it);
+                it++;
+                if(vec.size()<=1) break;
+            }
+            //myprint(vec);
+            if(vec.size()<=1) break;
+            it=vec.end()-1;
+            while(it>=vec.begin()){
+                //cout<<*it<<" ";
+                it = vec.erase(it);
+                it-=2;
+                if(vec.size()<=1) break;
+            }
+            //myprint(vec);
+        }
+        return vec[0];
+    }
+};
+```
+
+注意：erase(it)之后需要更新it
+
+it=erase(it)；如果不更新it，erase会将it变为野指针
+
+**同时erase(it)之后it会指向原来的it的后面的位置**
+
+注意for循环
+
+因此从后面向前删的话，it需要-=2
